@@ -1,11 +1,36 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from "vue";
+import { ref, reactive, onMounted, watch, defineProps } from "vue";
+
+defineProps({
+  total: {
+    type: Number,
+    required: true,
+  },
+  perPage: {
+    type: Number,
+    required: true,
+  },
+  currentPage: {
+    type: Number,
+    required: true,
+  },
+  pages: {
+    type: Array,
+    required: true,
+  },
+  pageProvider: {
+    type: String,
+    required: true,
+  },
+});
+
 </script>
 
 <template>
-  <nav class="nav">
-    <!-- <ul class="list">
+  <div></div>
+  <!-- <nav class="nav">
+    <ul class="list">
       <li class="item prev">
         <router-link
           :to="prevPage"
@@ -36,8 +61,8 @@ import { ref, reactive, onMounted, watch } from "vue";
           →
         </router-link>
       </li>
-    </ul> -->
-  </nav>
+    </ul>
+  </nav> -->
 </template>
 
 <style lang="scss">

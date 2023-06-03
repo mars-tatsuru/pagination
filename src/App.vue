@@ -16,5 +16,6 @@ import { onMounted, onBeforeMount, ref  } from "vue";
 body{
   background-color: #fff;
   color: #000;
+  height: auto;
 }
 </style>
