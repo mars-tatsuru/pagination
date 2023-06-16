@@ -11,6 +11,11 @@ const router = createRouter({
       component: HomeView,
       // beforeEnter: Auth0.routeGuard,
     },
+    {
+      path: '/:pageNum',
+      name: 'homePagenation',
+      component: HomeView,
+    },
   ],
 });
 

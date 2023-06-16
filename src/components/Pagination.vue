@@ -1,14 +1,18 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, defineProps } from "vue";
+import { ref, reactive, onMounted, watch, computed } from "vue";
 
-defineProps({
-  total: {
+const props = defineProps({
+  totalItems: {
     type: Number,
     required: true,
   },
-  perPage: {
+  itemPerPage: {
     type: Number,
+    required: true,
+  },
+  pageProvider: {
+    type: String,
     required: true,
   },
   currentPage: {
@@ -18,18 +22,48 @@ defineProps({
   pages: {
     type: Array,
     required: true,
-  },
-  pageProvider: {
-    type: String,
-    required: true,
+    of: Number,
   },
 });
+
+const prevPage = computed(() => {
+  if (props.currentPage === 2) return props.pageProvider
+      return `${props.pageProvider}/${props.currentPage - 1}`
+});
+
+const nextPage = computed(() => {
+    return `${props.pageProvider}/${props.currentPage + 1}`
+});
+
+
+const shouldShowPage = (page: number) => {
+  let currentPageToShow
+  if (props.currentPage === 1) {
+    currentPageToShow = 3
+    return props.currentPage + currentPageToShow >= page
+  }
+  if (props.currentPage === 2) {
+    currentPageToShow = 2
+    return props.currentPage + currentPageToShow >= page
+  }
+  if (props.currentPage === props.pages.length - 1) {
+    currentPageToShow = 4
+    return props.currentPage - currentPageToShow <= page
+  }
+  if (props.currentPage === props.pages.length) {
+    currentPageToShow = 5
+    return props.currentPage - currentPageToShow <= page
+  }
+
+  const currentPageToShowMin = 3
+  const currentPageToShowMax = 1
+  return props.currentPage - currentPageToShowMin <= page && page <= props.currentPage + currentPageToShowMax
+}
 
 </script>
 
 <template>
-  <div></div>
-  <!-- <nav class="nav">
+  <nav class="nav">
     <ul class="list">
       <li class="item prev">
         <router-link
@@ -41,7 +75,7 @@ defineProps({
         </router-link>
       </li>
       <li
-        v-for="(page, i) in pages"
+        v-for="(page, i) in (pages as number[])"
         v-show="shouldShowPage(page)"
         :key="i"
         class="item"
@@ -62,10 +96,10 @@ defineProps({
         </router-link>
       </li>
     </ul>
-  </nav> -->
+  </nav>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .nav {
     max-width: 690px;
     margin: 30px auto;
@@ -121,4 +155,20 @@ defineProps({
     }
   }
 }
+// @media (min-width: $breakPoint) {
+//   .nav {
+//     max-width: 370px;
+//     position: initial;
+//     transform: translate(0px, -100%);
+//     margin: auto;
+//     .list {
+//       .item {
+//         a {
+//           border-radius: 0px;
+//           border: 1px solid #EDEDED;
+//         }
+//       }
+//     }
+//   }
+// }
 </style>

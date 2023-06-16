@@ -1,50 +1,102 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from "vue";
+import { ref, reactive, onMounted, watch, computed } from "vue";
 import Pagination from "@/components/Pagination.vue";
 import { createClient } from 'microcms-js-sdk';
+import { useRouter, useRoute,onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
 
+
+/******************************
+ * clientIDとAPIキーを定義
+ ******************************/
 const client = createClient({
   serviceDomain: "oly7867sh3",
   apiKey: "3DdYSx2xto331BSkoxSSWq4OkpGqkamqXj87",
 });
 
 
-// ページネーションに必要なデータ
-const items = ref([])
+/******************************
+ * 記事取得に必要な変数を定義
+ ******************************/
+const items = ref<any>([])
 const totalItems = ref(0)
-const itemsPerPage = ref(20)
-const pages = ref([])
-const pageProvider = "/"
-const currentPage = ref(1)
 
 
-const fetchItems = async() => {
+/******************************
+ * ページネーションに必要な変数を定義
+ ******************************/
+const itemPerPage = ref()
+const pages = ref<any>([])
+const pageProvider = ""
+const router = useRoute()
+
+
+/******************************
+ * 描画のタイミング等で発動するもの
+ ******************************/
+// routingする前に記事を更新するため
+onBeforeRouteLeave((to, from) => {
+  handleCreateBlogList(Number(to.params.pageNum))
+});
+
+// mountedの前に用意するべきもの
+const currentPage = computed(() => {
+  return Number(router.query.value) || 1
+})
+
+// mounted時に記事を取得する処理
+onMounted(async() => {
+  await fetchItems({
+    offset: 0,
+    limit: 5,
+  })
+  setPaginationProps()
+})
+
+
+/*******************************
+ * メソッド
+ ******************************/
+// 記事を取得する関数
+const fetchItems = async(queryParams: {
+    offset: number;
+    limit: number;
+  }) => {
   await client.get({
       endpoint: 'blogs',
-      queries: { limit: 20},
+      queries: {
+        offset: queryParams.offset,
+        limit: queryParams.limit,
+      },
     })
     .then(res => {
-      console.log(res)
       items.value = res.contents
       totalItems.value = res.totalCount
+      itemPerPage.value = res.limit
     })
     .catch(err => console.error(err));
 }
 
-// const setPagiantionProps = () => {
-//   totalItems.value = items.value.length
-//   pages.value = [
-//     ...Array(Math.ceil(totalItems.value / itemsPerPage.value)).keys(),
-//   ]
-//   console.log(pages.value)
-// }
+// ページネーションのページ数を設定する関数
+const setPaginationProps = () => {
+  pages.value = [
+    ...Array(Math.ceil(totalItems.value / itemPerPage.value)).keys(),
+  ]
+}
 
-onMounted(async() => {
-  await fetchItems()
-  // setPagiantionProps()
-})
+// ページネーションのページをクリックした時の処理
+const handleCreateBlogList = async(pageNum: number) => {
 
+  const queryParams: {
+    offset: number;
+    limit: number;
+  } = {
+    offset: (pageNum - 1) * itemPerPage.value,
+    limit: itemPerPage.value,
+  };
 
+  await fetchItems(queryParams)
+  setPaginationProps()
+}
 
 
 
@@ -64,10 +116,10 @@ onMounted(async() => {
     <Pagination
       v-if="items.length"
       :total="totalItems"
-      :per-page="itemsPerPage"
       :current-page="currentPage"
       :pages="pages"
       :page-provider="pageProvider"
+      :per-page="itemPerPage"
     />
   </div>
 </template>
