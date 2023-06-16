@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, computed } from "vue";
+import { ref, reactive, onMounted, watch, computed, type ComputedRef } from "vue";
 import Pagination from "@/components/Pagination.vue";
 import { createClient } from 'microcms-js-sdk';
 import { useRouter, useRoute,onBeforeRouteLeave, onBeforeRouteUpdate } from "vue-router";
@@ -18,7 +18,7 @@ const client = createClient({
  * 記事取得に必要な変数を定義
  ******************************/
 const items = ref<any>([])
-const totalItems = ref(0)
+const totalItems = ref<number>(0)
 
 
 /******************************
@@ -28,7 +28,7 @@ const itemPerPage = ref()
 const pages = ref<any>([])
 const pageProvider = ""
 const router = useRoute()
-
+let currentPage:ComputedRef<number> | number;
 
 /******************************
  * 描画のタイミング等で発動するもの
@@ -36,10 +36,17 @@ const router = useRoute()
 // routingする前に記事を更新するため
 onBeforeRouteLeave((to, from) => {
   handleCreateBlogList(Number(to.params.pageNum))
+  currentPage = Number(to.params.pageNum)
+});
+
+// routingする前に記事を更新するため
+onBeforeRouteUpdate((to, from) => {
+  handleCreateBlogList(Number(to.params.pageNum))
+  currentPage = Number(to.params.pageNum)
 });
 
 // mountedの前に用意するべきもの
-const currentPage = computed(() => {
+currentPage = computed(() => {
   return Number(router.query.value) || 1
 })
 

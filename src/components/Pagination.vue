@@ -27,8 +27,11 @@ const props = defineProps({
 });
 
 const prevPage = computed(() => {
-  if (props.currentPage === 2) return props.pageProvider
-      return `${props.pageProvider}/${props.currentPage - 1}`
+  if (props.currentPage === 2) {
+    return props.pageProvider
+  } else {
+    return `${props.pageProvider}/${props.currentPage - 1}`
+  }
 });
 
 const nextPage = computed(() => {
